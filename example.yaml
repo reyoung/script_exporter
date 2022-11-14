@@ -3,6 +3,7 @@ namespace: "script_exporter"
 metrics:
   cpu:
     kind: gauge_vec
+    interval: 3s
     matrix:
       column:
         - pcpu
