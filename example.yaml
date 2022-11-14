@@ -1,0 +1,12 @@
+version: v1
+namespace: "script_exporter"
+metrics:
+  cpu:
+    kind: gauge_vec
+    matrix:
+      column:
+        - pcpu
+        - vsz
+        - rss
+    command: |
+      ps -eo {{ column }} | jq --slurp -R -cr '[split("\n")|.[]|tonumber?]|add'
