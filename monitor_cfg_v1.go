@@ -73,4 +73,40 @@ func init() {
 			}),
 		}).exec, nil
 	}
+
+	gCfgMetricMain[`counter_vec`] = func(namespace, name string, metric *CfgV1Metric) (func(), error) {
+		if len(metric.Matrix) == 0 {
+			return nil, errors.NewPlain(`counter_vec should contain matrix`)
+		}
+
+		keys := mapKeys(metric.Matrix)
+
+		counterVec := prometheus.NewCounterVec(prometheus.CounterOpts{
+			Namespace: namespace,
+			Name:      name,
+			Help:      metric.Help,
+		}, keys)
+		panicIf(reg.Register(counterVec))
+
+		prevCounters := map[string]float64{}
+
+		return (&commandExecutor{
+			command:  metric.Command,
+			interval: metric.Interval,
+			matrix:   metric.Matrix,
+			valueSetter: stripStdout(func(spec map[string]string, stdout string) {
+				fp := panicT(strconv.ParseFloat(stdout, 64))
+
+				var counterKeyBuilder strings.Builder
+				for _, k := range keys {
+					counterKeyBuilder.WriteString(spec[k])
+					counterKeyBuilder.WriteByte(0)
+				}
+				counterKey := counterKeyBuilder.String()
+
+				counterVec.With(spec).Add(fp - prevCounters[counterKey])
+				prevCounters[counterKey] = fp
+			}),
+		}).exec, nil
+	}
 }

@@ -11,3 +11,14 @@ metrics:
         - rss
     command: |
       ps -eo {{ column }} | jq --slurp -R -cr '[split("\n")|.[]|tonumber?]|add'
+  net:
+    kind: counter_vec
+    interval: 3s
+    matrix:
+      type:
+        - RX
+        - TX
+      nic:
+        - eth1
+    command: |
+      ifconfig {{ nic }} | grep '{{ type }} packets' | sed -r 's#.*bytes ([0-9]+) \(.*#\1#g'
