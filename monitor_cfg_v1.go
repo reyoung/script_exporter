@@ -52,8 +52,8 @@ func init() {
 	}
 
 	gCfgMetricMain[`gauge_vec`] = func(namespace, name string, metric *CfgV1Metric) (func(), error) {
-		if len(metric.Matrix) == 0 {
-			return nil, errors.NewPlain(`gauge_vec should contain matrix`)
+		if err := checkAndFillVecMatrix(metric.Matrix); err != nil {
+			return nil, errors.WrapIff(err, "gauge_vec")
 		}
 
 		gaugeVec := prometheus.NewGaugeVec(prometheus.GaugeOpts{
@@ -75,8 +75,8 @@ func init() {
 	}
 
 	gCfgMetricMain[`counter_vec`] = func(namespace, name string, metric *CfgV1Metric) (func(), error) {
-		if len(metric.Matrix) == 0 {
-			return nil, errors.NewPlain(`counter_vec should contain matrix`)
+		if err := checkAndFillVecMatrix(metric.Matrix); err != nil {
+			return nil, errors.WrapIff(err, "counter_vec")
 		}
 
 		keys := mapKeys(metric.Matrix)

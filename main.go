@@ -9,12 +9,18 @@ import (
 	"os"
 )
 
-var reg = prometheus.NewRegistry()
+var (
+	reg               = prometheus.NewRegistry()
+	gPredefinedMatrix map[string][]string
+)
 
 func main() {
 	cfg := flag.String("config", "config.yaml", "config file for script_exporter")
 	addr := flag.String("addr", ":9090", "export address")
+	matrix := flag.String("matrix", "", "matrix config. format key1=val1,val2:key2=val3,val4")
 	flag.Parse()
+
+	gPredefinedMatrix = parsePredefinedMatrix(*matrix)
 
 	file := panicT(os.Open(*cfg))
 	defer func() {
