@@ -58,8 +58,10 @@ func (e *commandExecutor) exec() {
 		matrixCall(nil, items, func(spec map[string]string) {
 			command := getCommand(spec)
 			cmd := exec.Command("bash", "-c", command)
-			buf := panicT(cmd.Output())
-			e.valueSetter(spec, string(buf))
+			buf, err := cmd.Output()
+			if err == nil {
+				e.valueSetter(spec, string(buf))
+			}
 		})
 		if e.interval == 0 {
 			e.interval = 30 * time.Second
